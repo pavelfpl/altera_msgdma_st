@@ -159,9 +159,9 @@ Designed and optimized for high speed transmissions using **Altera Streaming STÂ
 ## Benchmarks 
 - **ArriaÂ® 10, HPS configured with 100MHz master clock**
 
-  Total Write/read bytes count: 40960000
-  Elapsed time: 648.864000 ms.
-  Combined speed W/R [MBytes/s]: 63.13
-  Combined speed W/R [Mbit/s]: 505.01
-  Single direction speed [Mbit/s]: 1010.01
+  Total Write/read bytes count: 40960000  
+  Elapsed time: 648.864000 ms.  
+  Combined speed W/R [MBytes/s]: 63.13  
+  Combined speed W/R [Mbit/s]: 505.01  
+  Single direction speed [Mbit/s]: 1010.01  
 
