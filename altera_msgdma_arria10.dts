@@ -1,0 +1,82 @@
+/*
+ * Copyright (C) 2018 Pavel Fiala 
+ *               2015 Intel (Altera) Corporation 
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+ 
+ /* dtc -O dtb -o altera_msgdma_arria10.dtbo -b 0 -@ altera_msgdma_arria10.dts */
+ 
+/dts-v1/; /plugin/;
+/ {
+        fragment@0 {
+        /* target-path="/soc/base_fpga_region"; */ 
+        target-path="/soc";
+        #address-cells=<1>;
+        #size-cells=<1>;
+        __overlay__ {
+                /*
+                 
+                https://forum.rocketboards.org/t/problems-loading-device-tree-overlays-on-arria10-socfpga-kernel-4-14-126/2145/3
+                https://www.intel.co.jp/content/www/jp/ja/programmable/documentation/pne1482303525167.html
+                https://forum.rocketboards.org/t/arria-10-fpga-manager-driver-doesnt-support-full-reconfiguration/711/3
+                */
+                /* --> Full reconfiguration is not allowed on Arria 10 - use u-boot:  firmware-name="ghrd_10as066n2.core.rbf"; */
+                
+        
+                #address-cells=<1>;
+                #size-cells=<1>;
+                
+                clk_0: clk_0 {
+                        compatible = "fixed-clock";
+                        #clock-cells = <0>;
+                        clock-frequency = <100000000>;	/* 100.00 MHz */
+                        clock-output-names = "clk_0";
+                        }; 
+                
+                /*
+                 * ----------------   
+                 * Write MSGDMA / 0
+                 * ----------------
+                 */
+                msgdma_streaming_write_0: msgdma@c0040000 {
+                            compatible = "altr,altera-msgdma-st-1.0";
+                            reg = <0xc0040000 0x00000020>,
+                                  <0xc0040020 0x00000010>;
+                            reg-names = "csr", "descriptor_slave";
+                            string-property = "msgdma_write";
+                            interrupts = <0 21 4>;
+                            interrupt-parent = <&intc>;
+                            clocks = <&clk_0>;
+                        };
+                /*
+                 * ---------------   
+                 * READ MSGDMA / 0
+                 * ---------------
+                 */
+                msgdma_streaming_read_0: msgdma@c0041000 {
+                            compatible = "altr,altera-msgdma-st-1.0";
+                            reg = <0xc0041000 0x00000020>,
+                                  <0xc0041020 0x00000010>;
+                            reg-names = "csr", "descriptor_slave";
+                            string-property = "msgdma_read";
+                            interrupts = <0 22 4>;
+                            interrupt-parent = <&intc>;
+                            clocks = <&clk_0>;
+                        };
+                
+
+        };
+};

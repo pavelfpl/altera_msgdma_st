@@ -1,0 +1,19 @@
+# Rules file for the altera_msgdma_rd0 device driver ...
+# ------------------------------------------------------
+# ---------------- non root access --------------------- 
+# udevadm info -a -p /sys/class/misc/altera_msgdma_rd0
+# looking at device '/devices/virtual/misc/altera_msgdma_rd0':
+# KERNEL=="altera_msgdma_rd0"
+# SUBSYSTEM=="misc"
+# DRIVER==""
+
+KERNEL=="altera_msgdma_rd0", SUBSYSTEM=="misc", MODE="0666"
+
+# Rules file for the altera_msgdma_wr0 device driver ...
+# ------------------------------------------------------
+# udevadm info -a -p /sys/class/misc/altera_msgdma_wr0':
+# KERNEL=="altera_msgdma_wr0"
+# SUBSYSTEM=="misc"
+# DRIVER==""
+
+KERNEL=="altera_msgdma_wr0", SUBSYSTEM=="misc", MODE="0666"

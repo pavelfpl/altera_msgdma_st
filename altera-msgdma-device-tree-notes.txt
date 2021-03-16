@@ -1,0 +1,147 @@
+# ----------------------------------------------
+# Device Tree example for MSGDMA - streaming ...
+# ----------------------------------------------
+# - dev. notes
+# ----------------------------------------------
+
+https://www.kernel.org/doc/Documentation/devicetree/overlay-notes.txt
+https://github.com/ikwzm/FPGA-SoC-Linux
+https://elinux.org/Device_Tree_Usage
+https://stackoverflow.com/questions/50948932/device-tree-overlay-phandle
+
+base_fpga_region: base-fpga-region { 
+     compatible = "fpga-region"; 
+     fpga-mgr = <&fpga_mgr0>; 
+     fpga-bridges = <&fpga_bridge0>, <&fpga_bridge1>, <&fpga_bridge2>, <&fpga_bridge3>; 
+ 
+     #address-cells = <0x2>; 
+     #size-cells = <0x1>; 
+     ranges = <0x00000000 0x00000000 0xc0000000 0x20000000>, 
+              <0x00000001 0x00000000 0xff200000 0x00200000>; 
+};
+
+------------------------------------------------
+1] Example - HPS2{LW}FPGA - with previous ranges
+------------------------------------------------
+
+msgdma_streaming_write: msgdma@0x1000a0000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0x00000001 0x000a0000 0x00000020>,
+      <0x00000001 0x000b0000 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_write";
+   interrupts = <0 43 4>;
+   clocks = <&clk_0>;
+};
+
+msgdma_streaming_read: msgdma@0x1000a0000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0x00000001 0x000a0000 0x00000020>,
+      <0x00000001 0x000b0000 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_read";0x00000001
+   interrupts = <0 43 4>;
+   clocks = <&clk_0>;
+};
+
+---------------------------------------------------
+2] Example - HPS2FPGA / REAL - with previous ranges
+---------------------------------------------------
+
+msgdma_streaming_write: msgdma@0x000000000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0x00000000 0x00000000 0x00000020>,
+      <0x00000000 0x00000020 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_write";
+   interrupts = <0 40 4>;
+   clocks = <&clk_0>;
+};
+
+msgdma_streaming_read: msgdma@0x000001000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0x00000000 0x00001000 0x00000020>,
+      <0x00000000 0x00001020 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_read";
+   interrupts = <0 41 4>;
+   clocks = <&clk_0>;
+};
+
+---------------------------------------------
+3] Example - HPS2FPGA / REAL - without ranges
+---------------------------------------------
+0xC0000000 - HPS2FPGA ...
+0xff200000 - HPS2{LW}FPGA ...
+
+msgdma_streaming_write: msgdma@c0000000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0xc0000000 0x00000020>,
+      <0xc0000020 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_write";
+   interrupts = <0 40 4>;
+   clocks = <&clk_0>;
+};
+
+msgdma_streaming_read: msgdma@c000 1000 {
+   compatible = "altr,altera-msgdma-st-1.0";
+   reg = <0xc0001000 0x00000020>,
+      <0xc0001020 0x00000010>;
+   reg-names = "csr", "descriptor_slave";
+   string-property = "msgdma_read";
+   interrupts = <0 41 4>;
+   clocks = <&clk_0>;
+};
+
+-------------------------------------------
+4] Create __overlay__ [Device Tree Overlay]
+-------------------------------------------
+Compile: dtc -O dtb -o altera_msgdma_rbf.dtbo -b 0 -@ altera_msgdma_rbf.dts
+---------------------------------------------------------------------------
+
+/dts-v1/; /plugin/;
+/ {
+        fragment@0 {
+        target-path="/soc/fpga-region0";
+        #address-cells=<1>;
+        #size-cells=<1>;
+        __overlay__ {
+                firmware-name="altera_msgdma_socfpga.rbf";
+                #address-cells=<1>;
+                #size-cells=<1>;
+                
+                        msgdma_streaming_write: msgdma@c0000000 {
+                            compatible = "altr,altera-msgdma-st-1.0";
+                            reg = <0xc0000000 0x00000020>,
+                                <0xc0000020 0x00000010>;
+                            reg-names = "csr", "descriptor_slave";
+                            string-property = "msgdma_write";
+                            interrupts = <0 40 4>;
+                            clocks = <&clk_0>;
+                        };
+
+                        msgdma_streaming_read: msgdma@c0001000 {
+                            compatible = "altr,altera-msgdma-st-1.0";
+                            reg = <0xc0001000 0x00000020>,
+                                <0xc0001020 0x00000010>;
+                            reg-names = "csr", "descriptor_slave";
+                            string-property = "msgdma_read";
+                            interrupts = <0 41 4>;
+                            clocks = <&clk_0>;
+                        };
+                
+                };
+        };
+};
+
+-------------------
+5] Modules autoload 
+-------------------
+http://xillybus.com/tutorials/device-tree-zynq-3
+
+An important thing to note when writing kernel modules, is that the automatic loading mechanism (modprobe, actually) depends on an entry for the “compatible” string in /lib/modules/{kernel version}/modules.ofmap and other definition files in the same directory. The correct way to make this happen for your own module, is to copy the *.ko file to somewhere under the relevant /lib/modules/{kernel version}/kernel/drivers/ directory and go
+
+depmod -a
+
+
